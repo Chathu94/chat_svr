@@ -205,23 +205,34 @@ app.ws('/', (ws, req)=>{
             query += " keywords_set.* FROM keywords_set WHERE keywords_set.id = LAST_INSERT_ID();"
             console.log( query )
 
-            // mysql_query( { query: query, params: { iden: command.data.iden, keywords: command.data.keywords }, callback: (e, r) => {
-            //   if (e){
-            //     ws.send( JSON.stringify( { error : e.message} ) )
-            //     return;
-            //   } else {
-            //     let values = r[ r.length - 1 ][0];
-            //     for (i = 0; i < nthk; i++) {
-            //       PubSub.publish( 'keyword_change', JSON.stringify( { type : 'insert', data: { id:  values['kwd_' + i], keyword: values['kwdv_' + i] } } ) );
-            //     }
-            //     PubSub.publish( 'keyword_set_change', JSON.stringify( { type : 'insert', data: { id:  values.id, iden: values.iden, keyword: values.keywords } } ) );
-            //     ws.send( JSON.stringify( { error : false, data : { id:  values.id, iden: values.iden, keyword: values.keywords } } ) );
-            //   }
-            //} } );
+            mysql_query( { query: query, params: { iden: command.data.iden, keywords: command.data.keywords }, callback: (e, r) => {
+              if (e){
+                ws.send( JSON.stringify( { error : e.message} ) )
+                return;
+              } else {
+                let values = r[ r.length - 1 ][0];
+                for (i = 0; i < nthk; i++) {
+                  PubSub.publish( 'keyword_change', JSON.stringify( { type : 'insert', data: { id:  values['kwd_' + i], keyword: values['kwdv_' + i] } } ) );
+                }
+                PubSub.publish( 'keyword_set_change', JSON.stringify( { type : 'insert', data: { id:  values.id, iden: values.iden, keyword: values.keywords } } ) );
+                ws.send( JSON.stringify( { error : false, data : { id:  values.id, iden: values.iden, keyword: values.keywords } } ) );
+              }
+            } } );
           } else {
             ws.send( JSON.stringify( { error : "{ COMMAND.DATA } Nulled." } ) );
             return;
           }
+          return;
+        }
+        case "list_keyword_set": {
+          let query = "SELECT * FROM keywords_set";
+          mysql_query( { query: query, callback: (e, r) => {
+            if (e){
+              ws.send( JSON.stringify( { error : e.message} ) )
+              return;
+            }
+            ws.send( JSON.stringify( { error : false, rows : r } ) );
+          } } );
           return;
         }
         // Link
