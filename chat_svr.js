@@ -399,6 +399,13 @@ changes.ws('/', (ws, req)=>{
           } );
           break;
         }
+        case "keyword_set": {
+          tokenl = PubSub.subscribe( 'keyword_set_change', function( msg, data ){
+            //console.log( msg, data );
+            ws.send( data );
+          } );
+          break;
+        }
         case "hello": {
           ws.send( "HELLO BACK" );
           break;
